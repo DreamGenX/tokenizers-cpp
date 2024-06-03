@@ -83,7 +83,7 @@ class RWKVWorldTokenizer : public Tokenizer {
     _tree = std::make_unique<TrieTree>(_word2idx);
   }
 
-  std::vector<int32_t> Encode(const std::string& str) final {
+  std::vector<int32_t> Encode(const std::string& str, bool /*add_special_tokens*/) final {
     std::vector<int> ids;
     int str_idx = 0;
 
@@ -95,7 +95,7 @@ class RWKVWorldTokenizer : public Tokenizer {
     return ids;
   }
 
-  std::string Decode(const std::vector<int32_t>& ids) final {
+  std::string Decode(const std::vector<int32_t>& ids, bool /*skip_special_tokens*/) final {
     std::string str;
     for (auto id : ids) {
       str += IdToToken(id);

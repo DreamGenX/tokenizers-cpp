@@ -9,6 +9,8 @@
 
 #include <cassert>
 
+static const bool ADD_SPECIAL_TOKENS = true;
+
 namespace tokenizers {
 /*!
  * \brief A simple c++ header of tokenizer via C API.
@@ -27,7 +29,7 @@ class HFTokenizer : public Tokenizer {
   }
 
   // use i32 to be consistent with sentencepiece
-  std::vector<int32_t> Encode(const std::string& text, bool add_special_tokens) {
+  std::vector<int32_t> Encode(const std::string& text, bool add_special_tokens) final {
     TokenizerEncodeResult result;
     tokenizers_encode(handle_, text.data(), text.length(), static_cast<int>(add_special_tokens),
                       &result);
@@ -36,11 +38,8 @@ class HFTokenizer : public Tokenizer {
     return ret;
   }
 
-  // use i32 to be consistent with sentencepiece
-  std::vector<int32_t> Encode(const std::string& text) final { return Encode(text, false); }
-
   std::vector<std::vector<int32_t>> EncodeBatch(const std::vector<std::string>& texts,
-                                                bool add_special_tokens) {
+                                                bool add_special_tokens) final {
     std::vector<const char*> texts_raw;
     std::vector<size_t> seq_lens;
     size_t num_seqs = texts.size();
@@ -63,12 +62,8 @@ class HFTokenizer : public Tokenizer {
     return ret;
   }
 
-  std::vector<std::vector<int32_t>> EncodeBatch(const std::vector<std::string>& texts) final {
-    return EncodeBatch(texts, false);
-  }
-
   // use i32 to be consistent with sentencepiece
-  std::string Decode(const std::vector<int32_t>& ids, bool skip_special_tokens) {
+  std::string Decode(const std::vector<int32_t>& ids, bool skip_special_tokens) final {
     tokenizers_decode(handle_, reinterpret_cast<const uint32_t*>(ids.data()), ids.size(),
                       static_cast<int>(skip_special_tokens));
     const char* data;
@@ -76,8 +71,6 @@ class HFTokenizer : public Tokenizer {
     tokenizers_get_decode_str(handle_, &data, &len);
     return std::string(data, len);
   }
-
-  std::string Decode(const std::vector<int32_t>& ids) final { return Decode(ids, false); }
 
   size_t GetVocabSize() final {
     size_t size;

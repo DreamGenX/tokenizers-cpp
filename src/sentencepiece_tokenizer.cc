@@ -16,13 +16,13 @@ class SentencePieceTokenizer : public Tokenizer {
     sentence_piece_.LoadFromSerializedProto(model_blob);
   }
 
-  std::vector<int32_t> Encode(const std::string& text) final {
+  std::vector<int32_t> Encode(const std::string& text, bool /*add_special_tokens*/) final {
     std::vector<int32_t> tokens;
     sentence_piece_.Encode(text, &tokens).IgnoreError();
     return tokens;
   }
 
-  std::string Decode(const std::vector<int32_t>& ids) final {
+  std::string Decode(const std::vector<int32_t>& ids, bool /*skip_special_tokens*/) final {
     std::string text;
     sentence_piece_.Decode(ids, &text).IgnoreError();
     return text;

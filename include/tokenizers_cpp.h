@@ -25,9 +25,34 @@ class Tokenizer {
   /*!
    * \brief Encode text into ids.
    * \param text The input text.
+   * \param add_special_tokens Whether or not to add special tokens when encoding the sequences.
    * \returns The encoded token ids.
    */
-  virtual std::vector<int32_t> Encode(const std::string& text) = 0;
+  virtual std::vector<int32_t> Encode(const std::string& text, bool add_special_tokens) = 0;
+
+  /*!
+   * \brief Encode text into ids.
+   * \param text The input text.
+   * \returns The encoded token ids.
+   */
+  virtual std::vector<int32_t> Encode(const std::string& text) { return Encode(text, false); }
+
+  /*!
+   * \brief Encode a batch of texts into ids.
+   * \param texts The input texts.
+   * \param add_special_tokens Whether or not to add special tokens when encoding the sequences.
+   * \returns The encoded token ids.
+   */
+  virtual std::vector<std::vector<int32_t>> EncodeBatch(const std::vector<std::string>& texts,
+                                                        bool add_special_tokens) {
+    // Fall back when the derived class does not implement this function.
+    std::vector<std::vector<int32_t>> ret;
+    ret.reserve(texts.size());
+    for (const auto& text : texts) {
+      ret.push_back(Encode(text, add_special_tokens));
+    }
+    return ret;
+  }
 
   /*!
    * \brief Encode a batch of texts into ids.
@@ -35,21 +60,49 @@ class Tokenizer {
    * \returns The encoded token ids.
    */
   virtual std::vector<std::vector<int32_t>> EncodeBatch(const std::vector<std::string>& texts) {
-    // Fall back when the derived class does not implement this function.
-    std::vector<std::vector<int32_t>> ret;
-    ret.reserve(texts.size());
-    for (const auto& text : texts) {
-      ret.push_back(Encode(text));
-    }
-    return ret;
+    return EncodeBatch(texts, false);
   }
+
+  /*!
+   * \brief Decode token ids into text.
+   * \param text The token ids.
+   * \param skip_special_tokens Whether or not to remove special tokens in the decoding.
+   * \returns The decoded text.
+   */
+  virtual std::string Decode(const std::vector<int32_t>& ids, bool skip_special_tokens) = 0;
 
   /*!
    * \brief Decode token ids into text.
    * \param text The token ids.
    * \returns The decoded text.
    */
-  virtual std::string Decode(const std::vector<int32_t>& ids) = 0;
+  virtual std::string Decode(const std::vector<int32_t>& ids) { return Decode(ids, false); }
+
+  /*!
+   * \brief Decode a batch of token ids into text.
+   * \param ids The token ids.
+   * \param skip_special_tokens Whether or not to remove special tokens in the decoding.
+   * \returns The decoded text.
+   */
+  virtual std::vector<std::string> DecodeBatch(const std::vector<std::vector<int32_t>>& ids,
+                                               bool skip_special_tokens) {
+    // Fall back when the derived class does not implement this function.
+    std::vector<std::string> ret;
+    ret.reserve(ids.size());
+    for (const auto& id : ids) {
+      ret.push_back(Decode(id, skip_special_tokens));
+    }
+    return ret;
+  }
+
+  /*!
+   * \brief Decode a batch of token ids into text.
+   * \param ids The token ids.
+   * \returns The decoded text.
+   */
+  virtual std::vector<std::string> DecodeBatch(const std::vector<std::vector<int32_t>>& ids) {
+    return DecodeBatch(ids, false);
+  }
 
   /*!
    * \brief Returns the vocabulary size. Special tokens are considered.

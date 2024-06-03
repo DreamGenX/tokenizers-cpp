@@ -4,3 +4,4 @@
 [submodule "msgpack"]
 	path = msgpack
 	url = https://github.com/msgpack/msgpack-c
+	ignore = untracked
